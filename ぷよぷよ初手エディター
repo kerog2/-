@@ -16,6 +16,9 @@
 <button type=button onclick="data_delete2()">消す</button>
 <button type=button onclick="all_delete()">全て消す</button>
 
+<details id="BB"><summary tabindex="-1"><span style="color:blue">●</span><span style="color:blue">●</span></summary></details>
+<details id="BG"><summary tabindex="-1"><span style="color:blue">●</span><span style="color:green">●</span></summary></details>
+
 <script>
   section_bb = ["BB-BG","BB-GG","BB-GY"];
   section_bg = ["BG-BB","BG-BG","BG-BY","BG-YY","BG-YR"];
@@ -56,22 +59,6 @@
 
   };
 
-
-  var details = document.createElement('details');
-  details.setAttribute('id', "BB");
-  var summary = document.createElement('summary');
-  var puyo = "BB".replace(/B/g,'<span style="color:blue">●</span>').replace(/G/g,'<span style="color:green">●</span>').replace(/R/g,'<span style="color:blue">●</span>').replace(/Y/g,'<span style="color:yellow">●</span>');
-  summary.innerHTML = puyo;
-  summary.setAttribute('tabindex', "-1");
-  document.body.appendChild(details).appendChild(summary);
-
-  var details = document.createElement('details');
-  details.setAttribute('id', "BG");
-  var summary = document.createElement('summary');
-  var puyo = "BG".replace(/B/g,'<span style="color:blue">●</span>').replace(/G/g,'<span style="color:green">●</span>').replace(/R/g,'<span style="color:blue">●</span>').replace(/Y/g,'<span style="color:yellow">●</span>');
-  summary.innerHTML = puyo;
-  summary.setAttribute('tabindex', "-1");
-  document.body.appendChild(details).appendChild(summary);
 
   var createDetails = function(id, n) { //nは使わない
     var details = document.createElement('details');
