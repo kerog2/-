@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>ぷよぷよ初手エディター</title>
+<style>
+  details {position:relative; left:1em; background-color:silver;}
+</style>
+</head>
+<body>
+
+<select id="select"></select>
+<button type=button onclick="data_create2()">+</button>
+<button type=button onclick="data_save2()">セーブ</button>
+<button type=button onclick="data_load2()">ロード</button>
+<button type=button onclick="data_delete2()">消す</button>
+<button type=button onclick="all_delete()">全て消す</button>
+
+<details id="BB"><summary tabindex="-1"><span style="color:blue">●</span><span style="color:blue">●</span></summary></details>
+<details id="BG"><summary tabindex="-1"><span style="color:blue">●</span><span style="color:green">●</span></summary></details>
+
+<script>
+  section_bb = ["BB-BG","BB-GG","BB-GY"];
+  section_bg = ["BG-BB","BG-BG","BG-BY","BG-YY","BG-YR"];
+  tsumo = ["BB","BG","GG","BY","GY","YY","BR","GR","YR","RR"];
+
+  function tsumo_loop(inject_function, n){
+    for(var T2 of section_bb){
+      inject_function(T2, n);
+      for(var T3 of tsumo){
+        var id3 = T2 + '-' + T3;
+        inject_function(id3, n);
+        for(var T4 of tsumo){
+          var id4 = id3 + '-' + T4;
+          inject_function(id4, n);
+          for(var T5 of tsumo){
+            var id5 = id4 + '-' + T5;
+            inject_function(id5, n);
+          };
+        };
+      };
+    };
+
+    for(var T2 of section_bg){
+      inject_function(T2, n);
+      for(var T3 of tsumo){
+        var id3 = T2 + '-' + T3;
+        inject_function(id3, n);
+        for(var T4 of tsumo){
+          var id4 = id3 + '-' + T4;
+          inject_function(id4, n);
+          for(var T5 of tsumo){
+            var id5 = id4 + '-' + T5;
+            inject_function(id5, n);
+          };
+        };
+      };
+    };
+
+  };
+
+
+  var createDetails = function(id, n) { //nは使わない
+    var details = document.createElement('details');
+    details.setAttribute('id', id);
+    var summary = document.createElement('summary');
+    var puyo = id.replace(/B/g,'<span style="color:blue">●</span>').replace(/G/g,'<span style="color:green">●</span>').replace(/R/g,'<span style="color:red">●</span>').replace(/Y/g,'<span style="color:yellow">●</span>');
+    summary.innerHTML = '<input type="text" size="1" id="data_' + id + '"> ' + puyo;
+    summary.setAttribute('tabindex', "-1");
+    var target_id = id.replace(/...$/, "");
+    document.getElementById(target_id).appendChild(details).appendChild(summary);
+  };
+
+  tsumo_loop(createDetails, 0);
+
+
+  var data_save = function(id, n) {
+    var save_key = n + ":" + id;
+    var textbox_data = document.getElementById("data_" + id).value;
+    localStorage.setItem(save_key, textbox_data);
+  };
+
+  var data_save2 = function() {
+    if (!document.getElementById('select').value) return;
+    tsumo_loop(data_save, document.getElementById('select').value);
+  };
+
+  var data_load = function(id, n) {
+    var save_key = n + ":" + id;
+    var save_data = localStorage.getItem(save_key);
+    document.getElementById("data_" + id).value = save_data;
+  };
+
+  var data_load2 = function() {
+    if (!document.getElementById('select').value) return;
+    tsumo_loop(data_load, document.getElementById('select').value);
+  };
+
+
+  var data_create = function(id, n) {
+    var save_key = n + ":" + id;
+    localStorage.setItem(save_key, "");
+  };
+
+  var data_create2 = function(){
+    if(localStorage.getItem("save_num_pass") == "" || !localStorage.getItem("save_num_pass")){
+      localStorage.setItem("save_num_pass", "1"); //save_numを作成
+      var n = 1;
+    } else {
+      var save_num_record = localStorage.getItem("save_num_pass"); //save_numに最大値＋１のｎを追加
+      var save_num_list = save_num_record.split("_");
+      var n = Math.max.apply(null, save_num_list) + 1;
+      save_num_list.push(n);
+      save_num_record = save_num_list.join("_");
+      localStorage.setItem("save_num_pass", save_num_record);
+    };
+
+    tsumo_loop(data_create, n); //データを追加
+
+    var select = document.getElementById("select"); //表示に追加
+    var option = document.createElement('option');
+    option.innerHTML = "セーブデータ" + n;
+    option.setAttribute("value", n);
+    select.appendChild(option);
+  };
+
+  var data_delete = function(id, n) {
+    var save_key = n + ":" + id;
+    localStorage.removeItem(save_key);
+  };
+
+  var data_delete2 = function(){
+    if (!document.getElementById('select').value) return;
+    var n = document.getElementById('select').value;
+
+    var save_num_record = localStorage.getItem("save_num_pass"); //save_numから削除
+    var save_num_list = save_num_record.split("_");
+    save_num_list = save_num_list.filter(function(v){
+      return v != n;
+    });
+    save_num_record = save_num_list.join("_");
+    localStorage.setItem("save_num_pass", save_num_record);
+
+    tsumo_loop(data_delete, n); //データを削除
+
+    var select = document.getElementById("select"); //表示から削除
+    var option = select.options[select.selectedIndex];
+    select.removeChild(option);
+  };
+
+  var all_delete = function(){
+    var flg;
+    flg = confirm("本当に全てのデータを消しますか？");
+    if(flg == true){
+      localStorage.clear(); //save_num自体とデータを削除
+
+      var select = document.getElementById("select"); //表示から削除
+      while(select.selectedIndex != -1){
+        var option = select.options[select.selectedIndex];
+        select.removeChild(option);
+      };
+    };
+  };
+
+  var select_load = function(){
+    var save_num_list = localStorage.getItem("save_num_pass").split("_");
+    for(var n of save_num_list){
+      var select = document.getElementById("select");
+      var option = document.createElement('option');
+      option.innerHTML = "セーブデータ" + n;
+      option.setAttribute("value", n);
+      select.appendChild(option);
+    };
+  };
+
+  select_load();
+</script>
+
+</body>
+</html>
